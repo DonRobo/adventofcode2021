@@ -1,8 +1,7 @@
 package at.robbert.adventofcode
 
 fun main() {
-    val resource = ClassLoader.getSystemResource("day1.txt")
-    val inputLines = resource.readText().lines()
+    val inputLines = getInput(1)
     var previousLine: Int? = null
     var count = 0
     inputLines.mapNotNull { it.toIntOrNull() }.forEach { l ->
