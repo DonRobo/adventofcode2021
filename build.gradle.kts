@@ -11,4 +11,6 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+
+    implementation("com.google.ortools:ortools-java:9.1.9490")
 }
