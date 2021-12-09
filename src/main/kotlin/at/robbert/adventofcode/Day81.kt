@@ -19,14 +19,25 @@ fun parseSevenSegmentEntry(entry: String): String {
     val training = split[0].split(" ")
     val data = split[1].split(" ")
 
-    return data.joinToString("") { garbled ->
-        val digit = digits
-            .mapIndexed { index, s -> index to s.length }
-            .singleOrNull { (_, l) ->
-                l == garbled.length
-            }?.first
-        digit?.toString() ?: "?"
+    val mappings = mutableMapOf<Char, List<Char>>().withDefault { "abcdefg".toList() }
+
+    var mappedSomething = false
+    fun parseDigit(digitString: String): Int {
+        val options = digits.mapIndexed { d, string -> d to string }.filter { (_, string) ->
+            string.length == digitString.length
+        }
+
+        return TODO()
     }
+
+    do {
+        mappedSomething = false
+        (training + data).forEach {
+            parseDigit(it)
+        }
+    } while (mappedSomething)
+
+    return TODO()
 }
 
 fun main() {
