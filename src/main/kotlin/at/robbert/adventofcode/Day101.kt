@@ -15,7 +15,7 @@ fun main() {
                     else -> error("Invalid invalid character ${it.character}")
                 }
                 is Parsed -> println("Line okay")
-                Incomplete -> println("Line incomplete")
+                is Incomplete -> println("Line incomplete")
             }
         }
     }
@@ -29,7 +29,18 @@ sealed interface ParsingResult
 
 data class IllegalCharacter(val character: Char) : ParsingResult
 data class Parsed(val nextChunk: Int) : ParsingResult
-object Incomplete : ParsingResult
+data class Incomplete(val missing: Char, val previousIncomplete: Incomplete?) : ParsingResult {
+    val missingString: String get() = (previousIncomplete?.missingString ?: "") + missing
+
+    val score: Long
+        get() = (previousIncomplete?.score ?: 0) * 5L + when (missing) {
+            ')' -> 1
+            ']' -> 2
+            '}' -> 3
+            '>' -> 4
+            else -> error("Invalid missing character $missing")
+        }
+}
 
 fun parseChunk(line: String): ParsingResult {
     val start = line[0]
@@ -39,13 +50,18 @@ fun parseChunk(line: String): ParsingResult {
 
     require(start in openCharacters) { "Invalid start character: $start" }
 
+    var incomplete: Incomplete? = null
     var i = 1
     while (i < line.length) {
         when (val c = line[i]) {
             in openCharacters -> i = parseChunk(line.substring(i)).let {
                 when (it) {
                     is Parsed -> it.nextChunk + i
-                    is IllegalCharacter, is Incomplete -> return it
+                    is IllegalCharacter -> return it
+                    is Incomplete -> {
+                        incomplete = it
+                        line.length
+                    }
                 }
             }
             in closeCharacters -> return if (c == expectedClosing) {
@@ -59,6 +75,9 @@ fun parseChunk(line: String): ParsingResult {
         }
     }
 
-    return Incomplete
+    print("Chunk incomplete: ")
+    return Incomplete(expectedClosing, incomplete).also {
+        println(it.missingString + " (${it.score})")
+    }
 }
 
