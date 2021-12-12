@@ -1,17 +1,33 @@
 package at.robbert.adventofcode
 
 class List2D<T>(data: Collection<T>, val width: Int) {
-    private val data = data.toList()
-
-    operator fun get(x: Int, y: Int): T {
-        return data[x + y * width]
-    }
+    private val data = data.toMutableList()
 
     val height: Int = data.size / width
 
     init {
         require(data.size % width == 0)
     }
+
+    operator fun get(x: Int, y: Int): T {
+        require(x in 0 until width)
+        require(y in 0 until height)
+        return data[x + y * width]
+    }
+
+    fun getOptional(x: Int, y: Int): T? {
+        if (x < 0 || x >= width || y < 0 || y >= height) return null
+        return data[x + y * width]
+    }
+
+    operator fun set(x: Int, y: Int, value: T) {
+        data[x + y * width] = value
+    }
+
+    fun count(block: (T) -> Boolean): Int {
+        return data.count(block)
+    }
+
 }
 
 fun main() {
