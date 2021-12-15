@@ -1,52 +1,48 @@
 package at.robbert.adventofcode
 
+import java.util.*
+
 fun main() {
-    val input = getInput(15, example = true)
+    val input = getInput(15, example = false)
 
     val grid = List2D(input.flatMap { it.mapNotNull { it.digitToIntOrNull() } }, input.first().length)
 
-    val best = mutableMapOf<Point, Int>()
+    val best = mutableMapOf<Point, Path>()
     val start = Point(0, 0)
     val target = Point(grid.width - 1, grid.height - 1)
 
-    best[start] = 0
     var steps = 0
-    fun pathFind(path: Path?): Path? {
+    val open = LinkedList<Path>()
+    open.add(Path(null, start, 0))
+
+    while (open.isNotEmpty()) {
         steps++
 
-        val from = path?.position ?: start
+        if (steps % 1000 == 0) {
+            println("Steps: $steps")
+            println("Open: ${open.size}")
+            println("Already checked: ${best.size}")
+        }
 
-        val north = Point(from.x, from.y - 1)
-        val east = Point(from.x + 1, from.y)
-        val south = Point(from.x, from.y + 1)
-        val west = Point(from.x - 1, from.y)
+        val path = open.remove()
+        val bestSoFar = best[path.position]
+        if (bestSoFar != null && bestSoFar.cost <= path.cost) continue
+        best[path.position] = path
 
-        val options = listOf(north, east, south, west)
-            .filter {
-                it.x in 0 until grid.width && it.y in 0 until grid.height
-            }
-
-        val paths = options.map { point ->
-            Path(path, point, grid[point.x, point.y])
+        val next = listOf(
+            Point(path.position.x, path.position.y - 1),
+            Point(path.position.x + 1, path.position.y),
+            Point(path.position.x, path.position.y + 1),
+            Point(path.position.x - 1, path.position.y),
+        ).filter { it.x in 0 until grid.width && it.y in 0 until grid.height }.map {
+            Path(path, it, grid[it.x, it.y])
         }.filter {
-            val bestSoFar = best[it.position]
-            val newBest = bestSoFar == null || bestSoFar >= it.cost
-            newBest
-        }.sortedBy { it.cost }
-
-        paths.forEach {
-            best[it.position] = it.cost
+            val other = best[it.position]
+            other == null || other.cost > it.cost
         }
-
-        paths.firstOrNull { it.position == target }?.let {
-            println("Step $steps: Found $it")
-            return it
-        }
-
-        return paths.mapNotNull { pathFind(it) }.minByOrNull { it.cost }
+        open.addAll(next)
     }
-
-    val found = pathFind(null) ?: error("Path finding failed")
+    println("Took $steps steps")
 
     for (y in 0 until grid.height) {
         for (x in 0 until grid.width) {
@@ -56,7 +52,7 @@ fun main() {
     }
     println()
     val pathGrid = List2D((0 until grid.width * grid.height).map { 0 }, grid.width)
-    found.path.forEach {
+    best[target]!!.path.forEach {
         pathGrid[it.x, it.y] = 1
     }
     for (y in 0 until pathGrid.height) {
@@ -66,14 +62,16 @@ fun main() {
         println()
     }
     println()
+
+    println("Total risk: ${best[target]!!.cost}")
 }
 
 class Path(
     val previous: Path?,
     val position: Point,
-    private val thisCost: Int
+    thisCost: Int
 ) {
-    val cost: Int get() = thisCost + (previous?.cost ?: 0)
+    val cost: Int = thisCost + (previous?.cost ?: 0)
 
     val pathString: String get() = (previous?.let { "${it.pathString}->" } ?: "") + "[${position.x}, ${position.y}]"
     val path: List<Point> get() = (previous?.path ?: emptyList()) + position
