@@ -4,7 +4,7 @@ import java.util.*
 import kotlin.math.abs
 
 fun main() {
-    val input = getInput(15, example = true)
+    val input = getInput(15, example = false)
 
     val grid =
         List2D(input.flatMap { it.mapNotNull { it.digitToIntOrNull() } }, input.first().length).let { smallGrid ->
@@ -30,18 +30,17 @@ fun main() {
     val target = Point(grid.width - 1, grid.height - 1)
 
     var steps = 0
-    val open = TreeSet<Path> { o1, o2 ->
-//        val cost1 = o1.position.manhattenDistance(target) + o1.cost
-//        val cost2 = o2.position.manhattenDistance(target) + o2.cost
-//
-//        cost2 - cost1
-//        o1.position.manhattenDistance(target) - o2.position.manhattenDistance(target)
-        o1.cost - o2.cost
-    }
+    val open = LinkedList<Path>()
     open.add(Path(null, start, 0))
 
     while (open.isNotEmpty()) {
         steps++
+
+        val comp = Comparator.comparingInt<Path> {
+            it.cost
+        }
+
+        open.sortWith(comp)
 
         if (steps % 10000 == 0) {
             println("Steps: $steps")
@@ -50,7 +49,7 @@ fun main() {
             println("Current distance: ${open.first().position.manhattenDistance(target)}")
         }
 
-        val path = open.pollFirst()!!
+        val path = open.removeFirst()
         val bestSoFar = best[path.position]
         if (bestSoFar != null && bestSoFar.cost <= path.cost)
             continue
@@ -61,7 +60,11 @@ fun main() {
             Point(path.position.x + 1, path.position.y),
             Point(path.position.x, path.position.y + 1),
             Point(path.position.x - 1, path.position.y),
-        ).filter { it.x in 0 until grid.width && it.y in 0 until grid.height }.map {
+        ).also {
+            if (it.any { it == Point(9, 0) }) {
+                println("Found it!")
+            }
+        }.filter { it.x in 0 until grid.width && it.y in 0 until grid.height }.map {
             Path(path, it, grid[it.x, it.y])
         }.filter {
             val other = best[it.position]
@@ -79,8 +82,17 @@ fun main() {
     }
     println()
     val pathGrid = List2D((0 until grid.width * grid.height).map { 0 }, grid.width)
-    best[target]!!.path.forEach {
-        pathGrid[it.x, it.y] = 1
+    val bestPath = best[target]
+    if (bestPath != null)
+        bestPath.path.forEach {
+            pathGrid[it.x, it.y] = 1
+        }
+    else {
+        for (y in 0 until grid.height) {
+            for (x in 0 until grid.width) {
+                pathGrid[x, y] = if (best[Point(x, y)] != null) 1 else 0
+            }
+        }
     }
     for (y in 0 until pathGrid.height) {
         for (x in 0 until pathGrid.width) {
