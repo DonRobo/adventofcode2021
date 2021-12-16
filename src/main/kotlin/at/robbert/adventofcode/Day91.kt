@@ -38,6 +38,10 @@ class List2D<T>(data: Collection<T>, val width: Int) {
         return data.count(block)
     }
 
+    fun asList(): List<T> {
+        return data
+    }
+
 }
 
 fun main() {
