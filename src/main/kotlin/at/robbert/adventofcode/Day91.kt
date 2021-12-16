@@ -1,6 +1,16 @@
 package at.robbert.adventofcode
 
 class List2D<T>(data: Collection<T>, val width: Int) {
+    constructor(width: Int, height: Int, init: (Int, Int) -> T) : this(width.let {
+        val generatedData = ArrayList<T>(width * height)
+        (0 until height).map { y ->
+            (0 until width).map { x ->
+                generatedData.add(init(x, y))
+            }
+        }
+        generatedData
+    }, width)
+
     private val data = data.toMutableList()
 
     val height: Int = data.size / width
