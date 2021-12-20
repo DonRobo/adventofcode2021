@@ -1,5 +1,7 @@
 package at.robbert.adventofcode
 
+import kotlin.system.measureTimeMillis
+
 private fun String.requireImageString() = forEach { require(it in listOf('.', '#')) }
 
 class ImageEnhancer(private val algo: String) {
@@ -111,9 +113,13 @@ fun main() {
     image.render()
 
     var currentImage = image
-    for (step in 0 until 2) {
-        currentImage = currentImage.enhance(algo)
-        println("Step ${step + 1}")
-        currentImage.render()
+    measureTimeMillis {
+        for (step in 0 until 50) {
+            currentImage = currentImage.enhance(algo)
+            println("Step ${step + 1}")
+            currentImage.render()
+        }
+    }.also {
+        println("Total time: $it ms")
     }
 }
