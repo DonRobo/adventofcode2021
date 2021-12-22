@@ -1,6 +1,6 @@
 package at.robbert.adventofcode
 
-fun prettyPrint(packet: Packet, intention: Int = 0) {
+fun prettyPrintPacket(packet: Packet, intention: Int = 0) {
     val intentionStr = "  ".repeat(intention)
     when (packet) {
         is LiteralPacket -> println("${intentionStr}${packet.literal}")
@@ -17,7 +17,7 @@ fun prettyPrint(packet: Packet, intention: Int = 0) {
             }
             println("${intentionStr}$operatorStr (${packet.calculateValue()})")
             packet.subPackets.forEach {
-                prettyPrint(it, intention + 1)
+                prettyPrintPacket(it, intention + 1)
             }
         }
     }
@@ -48,7 +48,7 @@ fun Packet.calculateValue(): Long {
         }
         else -> {
             println("Couldn't evaluate packet:")
-            prettyPrint(this)
+            prettyPrintPacket(this)
             error("Evaluation error")
         }
     }
@@ -63,6 +63,6 @@ fun main() {
     }.joinToString("")
 
     val packet = readPacket(ConsumableBinary(binary))
-    prettyPrint(packet)
+    prettyPrintPacket(packet)
     println(packet.calculateValue())
 }
