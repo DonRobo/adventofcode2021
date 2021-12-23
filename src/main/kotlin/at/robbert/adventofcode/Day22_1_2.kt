@@ -1,3 +1,5 @@
+@file:JvmName("Day22Kt")
+
 package at.robbert.adventofcode
 
 import kotlin.math.max
@@ -145,9 +147,9 @@ fun main() {
             val z = zFrom.toLong()..zTo.toLong()
             Procedure(mode, x, y, z)
         }
-    }.filter {
+    }/*.filter {
         it.x.first >= -50 && it.x.last <= 50 && it.y.first >= -50 && it.y.last <= 50 && it.z.first >= -50 && it.z.last <= 50
-    }
+    }*/
 
     val grid = Sparse3DGrid()
     steps.forEach {
